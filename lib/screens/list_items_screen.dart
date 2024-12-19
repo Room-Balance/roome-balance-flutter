@@ -1,32 +1,41 @@
 import 'package:flutter/material.dart';
+import '../models/task.dart';
 
 class ListItemsScreen extends StatelessWidget {
-  const ListItemsScreen({super.key});
+  const ListItemsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Dummy veriler
-    final items = [
-      {"type": "Task", "name": "Pay Rent", "amount": 500},
-      {"type": "User", "name": "Alice", "contribution": 200},
-      {"type": "Task", "name": "Clean Kitchen", "amount": 0},
-    ];
-
     return Scaffold(
-      appBar: AppBar(title: const Text("List Items"), backgroundColor: Colors.green),
-      body: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return ListTile(
-            leading: Icon(item['type'] == "Task" ? Icons.task : Icons.person),
-            title: Text("${item['type']}: ${item['name']}"),
-            subtitle: item['amount'] != null
-                ? Text("Amount: ${item['amount']}₺")
-                : Text("Contribution: ${item['contribution']}₺"),
-          );
-        },
+      appBar: AppBar(
+        title: const Text('Task List'),
+        backgroundColor: Colors.green,
       ),
+      body: globalTasks.isEmpty
+          ? const Center(
+              child: Text(
+                'No tasks available.',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+            )
+          : ListView.builder(
+              itemCount: globalTasks.length,
+              itemBuilder: (context, index) {
+                final task = globalTasks[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    leading: const Icon(Icons.task, color: Colors.green),
+                    title: Text(task.taskName),
+                    subtitle: Text(
+                      task.assignedUser.isEmpty
+                          ? 'Unassigned Task'
+                          : 'Assigned to: ${task.assignedUser}',
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }

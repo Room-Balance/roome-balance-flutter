@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../models/task.dart';
+import 'add_task_screen.dart';
+import 'list_items_screen.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, dynamic>> users = []; // Kullanıcı verileri
-  List<String> tasks = []; // Task verileri
+  List<Map<String, dynamic>> users = [
+    {"name": "Alice", "payment": 200.0, "expense": 150.0},
+    {"name": "Bob", "payment": 300.0, "expense": 100.0},
+  ];
 
   int _currentIndex = 0;
 
-  // Gelir ve gider hesaplama
   Map<String, double> calculateIncomeExpense() {
     double totalIncome = 0;
     double totalExpense = 0;
@@ -39,7 +43,7 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              Navigator.pushNamed(context, '/notifications', arguments: tasks);
+              Navigator.pushNamed(context, '/notifications');
             },
           ),
         ],
@@ -63,7 +67,8 @@ class _HomePageState extends State<HomePage> {
         children: [
           const Text(
             "Our Home",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 10),
           Expanded(
@@ -115,14 +120,20 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Users", style: TextStyle(fontSize: 20, color: Colors.white)),
+        const Text(
+          "Users",
+          style: TextStyle(fontSize: 20, color: Colors.white),
+        ),
         const SizedBox(height: 10),
         ...users.map((user) {
           return Card(
             color: Colors.green.shade800,
             child: ListTile(
               leading: const Icon(Icons.person, color: Colors.white),
-              title: Text(user["name"], style: const TextStyle(color: Colors.white)),
+              title: Text(
+                user["name"],
+                style: const TextStyle(color: Colors.white),
+              ),
               subtitle: Text(
                 "Payment: ${user["payment"]}₺ | Expense: ${user["expense"]}₺",
                 style: const TextStyle(color: Colors.white70),
@@ -138,17 +149,30 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Tasks", style: TextStyle(fontSize: 20, color: Colors.white)),
+        const Text(
+          "Tasks",
+          style: TextStyle(fontSize: 20, color: Colors.white),
+        ),
         const SizedBox(height: 10),
-        tasks.isEmpty
-            ? const Text("No tasks yet!", style: TextStyle(color: Colors.white70))
+        globalTasks.isEmpty
+            ? const Text(
+                "No tasks yet!",
+                style: TextStyle(color: Colors.white70),
+              )
             : Column(
-                children: tasks.map((task) {
+                children: globalTasks.map((task) {
                   return Card(
                     color: Colors.green.shade600,
                     child: ListTile(
                       leading: const Icon(Icons.task, color: Colors.white),
-                      title: Text(task, style: const TextStyle(color: Colors.white)),
+                      title: Text(
+                        task.taskName,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        "Assigned to: ${task.assignedUser}",
+                        style: const TextStyle(color: Colors.white70),
+                      ),
                     ),
                   );
                 }).toList(),
@@ -159,13 +183,23 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildOtherPages() {
     if (_currentIndex == 1) {
-      return const Center(
-          child: Text("Task List Page", style: TextStyle(fontSize: 24, color: Colors.white)));
+      return const ListItemsScreen(); // Task List ekranı
     } else if (_currentIndex == 2) {
       return const Center(
-          child: Text("Calendar Page", style: TextStyle(fontSize: 24, color: Colors.white)));
+        child: Text(
+          "Calendar Page",
+          style: TextStyle(fontSize: 24, color: Colors.white),
+        ),
+      );
+    } else if (_currentIndex == 3) {
+      return _buildProfilePage(); // Profil ekranı
     } else {
-      return _buildProfilePage();
+      return const Center(
+        child: Text(
+          "Unknown Page",
+          style: TextStyle(fontSize: 24, color: Colors.white),
+        ),
+      );
     }
   }
 
@@ -175,7 +209,10 @@ class _HomePageState extends State<HomePage> {
       children: [
         const Icon(Icons.account_circle, size: 100, color: Colors.white),
         const SizedBox(height: 20),
-        const Text("User Profile", style: TextStyle(fontSize: 24, color: Colors.white)),
+        const Text(
+          "User Profile",
+          style: TextStyle(fontSize: 24, color: Colors.white),
+        ),
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: () => Navigator.pushReplacementNamed(context, '/signIn'),
@@ -200,7 +237,13 @@ class _HomePageState extends State<HomePage> {
           ListTile(
             leading: const Icon(Icons.task),
             title: const Text("Add Task"),
-            onTap: _addTask,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddTaskScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -219,9 +262,20 @@ class _HomePageState extends State<HomePage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: "Name")),
-            TextField(controller: paymentController, decoration: const InputDecoration(labelText: "Payment")),
-            TextField(controller: expenseController, decoration: const InputDecoration(labelText: "Expense")),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: "Name"),
+            ),
+            TextField(
+              controller: paymentController,
+              decoration: const InputDecoration(labelText: "Payment"),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: expenseController,
+              decoration: const InputDecoration(labelText: "Expense"),
+              keyboardType: TextInputType.number,
+            ),
           ],
         ),
         actions: [
@@ -230,35 +284,9 @@ class _HomePageState extends State<HomePage> {
               setState(() {
                 users.add({
                   "name": nameController.text,
-                  "payment": double.tryParse(paymentController.text) ?? 0,
-                  "expense": double.tryParse(expenseController.text) ?? 0,
+                  "payment": double.tryParse(paymentController.text) ?? 0.0,
+                  "expense": double.tryParse(expenseController.text) ?? 0.0,
                 });
-              });
-              Navigator.pop(ctx);
-            },
-            child: const Text("Add"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _addTask() {
-    final taskController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Add Task"),
-        content: TextField(
-          controller: taskController,
-          decoration: const InputDecoration(labelText: "Task Description"),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                tasks.add(taskController.text);
               });
               Navigator.pop(ctx);
             },
@@ -278,18 +306,22 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
-              icon: const Icon(Icons.home, color: Colors.white),
-              onPressed: () => setState(() => _currentIndex = 0)),
+            icon: const Icon(Icons.home, color: Colors.white),
+            onPressed: () => setState(() => _currentIndex = 0),
+          ),
           IconButton(
-              icon: const Icon(Icons.list, color: Colors.white),
-              onPressed: () => setState(() => _currentIndex = 1)),
-          const SizedBox(width: 40), // Boşluk
+            icon: const Icon(Icons.list, color: Colors.white),
+            onPressed: () => setState(() => _currentIndex = 1),
+          ),
+          const SizedBox(width: 40),
           IconButton(
-              icon: const Icon(Icons.calendar_today, color: Colors.white),
-              onPressed: () => setState(() => _currentIndex = 2)),
+            icon: const Icon(Icons.calendar_today, color: Colors.white),
+            onPressed: () => setState(() => _currentIndex = 2),
+          ),
           IconButton(
-              icon: const Icon(Icons.person, color: Colors.white),
-              onPressed: () => setState(() => _currentIndex = 3)),
+            icon: const Icon(Icons.person, color: Colors.white),
+            onPressed: () => setState(() => _currentIndex = 3),
+          ),
         ],
       ),
     );
