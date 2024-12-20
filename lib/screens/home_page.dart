@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../models/task.dart';
-import 'add_task_screen.dart';
+import 'notifications_screen.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'list_items_screen.dart';
+import 'package:uuid/uuid.dart'; // For generating unique IDs
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -12,10 +13,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, dynamic>> users = [
-    {"name": "Alice", "payment": 200.0, "expense": 150.0},
-    {"name": "Bob", "payment": 300.0, "expense": 100.0},
-  ];
+  List<Map<String, dynamic>> users = [];
+  List<Task> globalTasks = [];
+  List<Map<String, String>> notifications = []; // Notifications data
+  final Uuid uuid = Uuid(); // Instance for generating unique IDs
 
   int _currentIndex = 0;
 
@@ -43,14 +44,32 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              Navigator.pushNamed(context, '/notifications');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationsScreen(tasks: globalTasks),
+                ),
+              );
             },
           ),
         ],
       ),
-      body: _currentIndex == 0 ? _buildHomeScreen(totals) : _buildOtherPages(),
+      body: _currentIndex == 0
+          ? _buildHomeScreen(totals)
+          : _currentIndex == 1
+              ? ListItemsScreen(tasks: globalTasks, users: users)
+              : _currentIndex == 2
+                  ? const Center(
+                      child: Text(
+                        "Calendar Feature Coming Soon",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    )
+                  : _buildProfilePage(),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddOptions,
+        onPressed: () {
+          _showAddOptions();
+        },
         backgroundColor: Colors.green,
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -63,144 +82,53 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Text(
             "Our Home",
             style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: ListView(
-              children: [
-                _buildPieChart(totals),
-                const SizedBox(height: 20),
-                _buildUserList(),
-                const SizedBox(height: 20),
-                _buildTaskList(),
-              ],
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
+          const SizedBox(height: 20),
+          totals["income"] == 0 && totals["expense"] == 0
+              ? const Text(
+                  "No financial data available.",
+                  style: TextStyle(color: Colors.white70, fontSize: 18),
+                )
+              : _buildPieChart(totals),
         ],
       ),
     );
   }
 
   Widget _buildPieChart(Map<String, double> totals) {
-    return SizedBox(
-      height: 200,
-      child: Card(
-        color: Colors.green.shade700,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: PieChart(
-            PieChartData(
-              sections: [
-                PieChartSectionData(
-                  value: totals["income"]!,
-                  color: Colors.greenAccent,
-                  title: 'Income\n${totals["income"]!.toStringAsFixed(2)}₺',
-                ),
-                PieChartSectionData(
-                  value: totals["expense"]!,
-                  color: Colors.redAccent,
-                  title: 'Expense\n${totals["expense"]!.toStringAsFixed(2)}₺',
-                ),
-              ],
-              centerSpaceRadius: 50,
-            ),
+    return Center(
+      child: SizedBox(
+        height: 300,
+        width: 300,
+        child: PieChart(
+          PieChartData(
+            sections: [
+              PieChartSectionData(
+                value: totals["income"]!,
+                color: Colors.greenAccent,
+                title: 'Income\n${totals["income"]!.toStringAsFixed(2)}₺',
+              ),
+              PieChartSectionData(
+                value: totals["expense"]!,
+                color: Colors.redAccent,
+                title: 'Expense\n${totals["expense"]!.toStringAsFixed(2)}₺',
+              ),
+            ],
+            centerSpaceRadius: 50,
+            sectionsSpace: 2,
           ),
         ),
       ),
     );
-  }
-
-  Widget _buildUserList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Users",
-          style: TextStyle(fontSize: 20, color: Colors.white),
-        ),
-        const SizedBox(height: 10),
-        ...users.map((user) {
-          return Card(
-            color: Colors.green.shade800,
-            child: ListTile(
-              leading: const Icon(Icons.person, color: Colors.white),
-              title: Text(
-                user["name"],
-                style: const TextStyle(color: Colors.white),
-              ),
-              subtitle: Text(
-                "Payment: ${user["payment"]}₺ | Expense: ${user["expense"]}₺",
-                style: const TextStyle(color: Colors.white70),
-              ),
-            ),
-          );
-        }).toList(),
-      ],
-    );
-  }
-
-  Widget _buildTaskList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Tasks",
-          style: TextStyle(fontSize: 20, color: Colors.white),
-        ),
-        const SizedBox(height: 10),
-        globalTasks.isEmpty
-            ? const Text(
-                "No tasks yet!",
-                style: TextStyle(color: Colors.white70),
-              )
-            : Column(
-                children: globalTasks.map((task) {
-                  return Card(
-                    color: Colors.green.shade600,
-                    child: ListTile(
-                      leading: const Icon(Icons.task, color: Colors.white),
-                      title: Text(
-                        task.taskName,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      subtitle: Text(
-                        "Assigned to: ${task.assignedUser}",
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-      ],
-    );
-  }
-
-  Widget _buildOtherPages() {
-    if (_currentIndex == 1) {
-      return const ListItemsScreen(); // Task List ekranı
-    } else if (_currentIndex == 2) {
-      return const Center(
-        child: Text(
-          "Calendar Page",
-          style: TextStyle(fontSize: 24, color: Colors.white),
-        ),
-      );
-    } else if (_currentIndex == 3) {
-      return _buildProfilePage(); // Profil ekranı
-    } else {
-      return const Center(
-        child: Text(
-          "Unknown Page",
-          style: TextStyle(fontSize: 24, color: Colors.white),
-        ),
-      );
-    }
   }
 
   Widget _buildProfilePage() {
@@ -239,10 +167,7 @@ class _HomePageState extends State<HomePage> {
             title: const Text("Add Task"),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddTaskScreen()),
-              );
+              _addTask();
             },
           ),
         ],
@@ -281,14 +206,73 @@ class _HomePageState extends State<HomePage> {
         actions: [
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                users.add({
-                  "name": nameController.text,
-                  "payment": double.tryParse(paymentController.text) ?? 0.0,
-                  "expense": double.tryParse(expenseController.text) ?? 0.0,
+              if (nameController.text.isNotEmpty &&
+                  paymentController.text.isNotEmpty &&
+                  expenseController.text.isNotEmpty) {
+                setState(() {
+                  users.add({
+                    "name": nameController.text,
+                    "payment": double.tryParse(paymentController.text) ?? 0.0,
+                    "expense": double.tryParse(expenseController.text) ?? 0.0,
+                  });
                 });
-              });
-              Navigator.pop(ctx);
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text("Add"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _addTask() {
+    final taskController = TextEditingController();
+    String? assignedUser;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Add Task"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: taskController,
+              decoration: const InputDecoration(labelText: "Task Name"),
+            ),
+            DropdownButton<String>(
+              hint: const Text("Assign to User"),
+              value: assignedUser,
+              onChanged: (value) {
+                setState(() {
+                  assignedUser = value;
+                });
+              },
+              items: users.map((user) {
+                return DropdownMenuItem<String>(
+                  value: user["name"],
+                  child: Text(user["name"]!),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              if (taskController.text.isNotEmpty && assignedUser != null) {
+                setState(() {
+                  globalTasks.add(
+                    Task(
+                      id: uuid.v4(),
+                      taskName: taskController.text,
+                      assignedUser: assignedUser!,
+                    ),
+                  );
+                });
+                Navigator.pop(ctx);
+              }
             },
             child: const Text("Add"),
           ),

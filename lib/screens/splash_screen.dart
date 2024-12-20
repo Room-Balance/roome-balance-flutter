@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'dart:async'; // Timer kullanmak için gerekli
+import 'sign_in_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -12,37 +13,34 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // after 3 secs SignInScreen
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/signIn');
+    Timer(const Duration(seconds: 2), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignInScreen()),
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A3C34), // Arkaplan rengi
+      backgroundColor: const Color(0xFF1D3E2A),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            // Logo
-           
-            Image.asset(
-              'assets/images/splash_screen_logo.png',
-              width: 150,
-              height: 150,
-            ), 
-            
-            const SizedBox(height: 20),
-            // name of the app
-            const Text(
-              'HOME BALANCE',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 1.5,
+            Positioned.fill(
+              child: CustomPaint(
+                painter: SplashBackgroundPainter(),
+              ),
+            ),
+            Center(
+              child: Text(
+                "HOME BALANCE",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
@@ -50,4 +48,23 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
+}
+
+class SplashBackgroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()..style = PaintingStyle.fill;
+
+    paint.color = const Color(0xFF2E5941);
+    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 200, paint);
+
+    paint.color = const Color(0xFF3D7056);
+    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 150, paint);
+
+    paint.color = const Color(0xFF5F8D75);
+    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 100, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

@@ -131,7 +131,7 @@ class SignInScreen extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () => _signInWithGoogle(context),
                   icon: Image.asset(
-                    'assets/images/google_logo.png', // Google logo ekleyin
+                    'assets/images/google_logo.png', // Google logo 
                     height: 24,
                   ),
                   label: const Text(

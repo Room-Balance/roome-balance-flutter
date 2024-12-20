@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/notifications_screen.dart' as notifications;
-import 'screens/list_items_screen.dart' as listItems;
+import 'screens/notifications_screen.dart';
+import 'screens/list_items_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/home_page.dart';
@@ -18,15 +18,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Home Balance',
       theme: ThemeData(primarySwatch: Colors.green),
-      initialRoute: '/home',
+      initialRoute: '/splash',
       routes: {
         '/splash': (context) => SplashScreen(),
         '/signIn': (context) => SignInScreen(),
         '/home': (context) => HomePage(),
         '/addUser': (context) => AddUserScreen(),
         '/addTask': (context) => AddTaskScreen(),
-        '/notifications': (context) => notifications.NotificationsScreen(),
-        '/listItems': (context) => listItems.ListItemsScreen(),
+         '/notifications': (context) => NotificationsScreen(tasks: []), // Pass tasks dynamically
       },
     );
   }
