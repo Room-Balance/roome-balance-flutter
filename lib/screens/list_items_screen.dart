@@ -32,9 +32,11 @@ class ListItemsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               tasks.isEmpty
-                  ? const Text(
-                      "No tasks available.",
-                      style: TextStyle(color: Colors.black54),
+                  ? const Center(
+                      child: Text(
+                        "No tasks available.",
+                        style: TextStyle(color: Colors.black54),
+                      ),
                     )
                   : ListView.builder(
                       shrinkWrap: true,
@@ -45,7 +47,7 @@ class ListItemsScreen extends StatelessWidget {
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
                           child: ListTile(
-                            leading: const Icon(Icons.task, color: Colors.green),
+                            leading: Icon(task.icon, color: Colors.green),
                             title: Text(task.taskName),
                             subtitle: Text(
                               "Assigned to: ${task.assignedUser}\nDue: ${DateFormat('yyyy-MM-dd').format(task.dueDate)}",
@@ -54,6 +56,15 @@ class ListItemsScreen extends StatelessWidget {
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () {
                                 // Görev silme işlemi
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '${task.taskName} deleted!',
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -71,9 +82,11 @@ class ListItemsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               users.isEmpty
-                  ? const Text(
-                      "No users available.",
-                      style: TextStyle(color: Colors.black54),
+                  ? const Center(
+                      child: Text(
+                        "No users available.",
+                        style: TextStyle(color: Colors.black54),
+                      ),
                     )
                   : ListView.builder(
                       shrinkWrap: true,

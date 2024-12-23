@@ -5,6 +5,7 @@ import 'calendar_screen.dart';
 import 'profile_screen.dart';
 import 'package:uuid/uuid.dart';
 
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -18,29 +19,33 @@ class _HomePageState extends State<HomePage> {
       "name": "Alice",
       "email": "alice@example.com",
       "payment": 150.0,
-      "expense": 50.0
+      "expense": 50.0,
     },
     {
       "name": "Bob",
       "email": "bob@example.com",
       "payment": 200.0,
-      "expense": 100.0
+      "expense": 100.0,
     },
   ];
+
   final List<Task> globalTasks = [
     Task(
       id: "1",
       taskName: "Cleaning",
       assignedUser: "Alice",
       dueDate: DateTime.now(),
+      icon: Icons.cleaning_services,
     ),
     Task(
       id: "2",
-      taskName: "Dishes",
+      taskName: "Dishwashing",
       assignedUser: "Bob",
       dueDate: DateTime.now().add(Duration(days: 1)),
+      icon: Icons.local_laundry_service,
     ),
   ];
+
   final Uuid uuid = Uuid();
   int _currentIndex = 0;
 
@@ -50,8 +55,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pages = [
-      HomeContent(),
-      TaskListScreen(),
+      _buildHomeContent(),
+      ListItemsScreen(tasks: globalTasks, users: users),
       CalendarScreen(tasks: globalTasks),
       ProfileScreen(),
     ];
@@ -67,8 +72,7 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              Navigator.pushNamed(context, '/notifications',
-                  arguments: globalTasks);
+              Navigator.pushNamed(context, '/notifications', arguments: globalTasks);
             },
           ),
         ],
@@ -82,16 +86,9 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          if (index == 2) {
-            Navigator.pushNamed(context, '/calendar',
-                arguments: globalTasks);
-          } else if (index == 3) {
-            Navigator.pushNamed(context, '/profile');
-          } else {
-            setState(() {
-              _currentIndex = index;
-            });
-          }
+          setState(() {
+            _currentIndex = index;
+          });
         },
         backgroundColor: Colors.white,
         selectedItemColor: Colors.green,
@@ -116,6 +113,24 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  Widget _buildHomeContent() {
+    return globalTasks.isEmpty
+        ? const Center(child: Text("No tasks added yet!"))
+        : ListView.builder(
+            itemCount: globalTasks.length,
+            itemBuilder: (context, index) {
+              final task = globalTasks[index];
+              return ListTile(
+                leading: Icon(task.icon, color: Colors.green),
+                title: Text(task.taskName),
+                subtitle: Text(
+                  "${task.assignedUser} - ${task.dueDate.toLocal()}",
+                ),
+              );
+            },
+          );
   }
 
   void _showAddOptions() {
@@ -184,99 +199,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _addTask() {
-    final taskController = TextEditingController();
-    String? selectedUser;
-    DateTime? selectedDate;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Add Task"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: taskController,
-                decoration: const InputDecoration(hintText: "Task Name"),
-              ),
-              DropdownButton<String>(
-                hint: const Text("Assign to User"),
-                value: selectedUser,
-                onChanged: (value) {
-                  setState(() {
-                    selectedUser = value;
-                  });
-                },
-                items: users.map<DropdownMenuItem<String>>((user) {
-                  return DropdownMenuItem<String>(
-                    value: user["name"],
-                    child: Text(user["name"]),
-                  );
-                }).toList(),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  );
-                  setState(() {
-                    selectedDate = pickedDate;
-                  });
-                },
-                child: const Text("Select Due Date"),
-              ),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                if (selectedUser != null &&
-                    taskController.text.isNotEmpty &&
-                    selectedDate != null) {
-                  setState(() {
-                    globalTasks.add(Task(
-                      id: uuid.v4(),
-                      taskName: taskController.text,
-                      assignedUser: selectedUser!,
-                      dueDate: selectedDate!,
-                    ));
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text("Add"),
-            ),
-          ],
-        );
+    Navigator.pushNamed(
+      context,
+      '/addTask',
+      arguments: {
+        'users': users,
+        'onTaskAdded': (Task task) {
+          setState(() {
+            globalTasks.add(task);
+          });
+        },
       },
     );
   }
 }
 
-class HomeContent extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Home Page Content',
-        style: TextStyle(fontSize: 20),
-      ),
-    );
-  }
-}
-
-class TaskListScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Task List Screen',
-        style: TextStyle(fontSize: 20),
-      ),
-    );
-  }
-}

@@ -21,12 +21,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   DateTime? selectedDate;
   final TextEditingController taskController = TextEditingController();
 
-  final List<String> predefinedTasks = [
-    'Cleaning',
-    'Dishwashing',
-    'Cooking',
-    'Shopping',
-    'Repairing'
+  final List<Map<String, dynamic>> predefinedTasks = [
+    {'name': 'Washing', 'icon': Icons.local_laundry_service},
+    {'name': 'Cooking', 'icon': Icons.kitchen},
+    {'name': 'Dishwashing', 'icon': Icons.cleaning_services},
+    {'name': 'Shopping', 'icon': Icons.shopping_cart},
+    {'name': 'Repairing', 'icon': Icons.build},
   ];
 
   void addTask() {
@@ -86,9 +86,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               value: selectedTask,
               hint: const Text('Select Predefined Task'),
               items: predefinedTasks.map((task) {
-                return DropdownMenuItem(
-                  value: task,
-                  child: Text(task),
+                return DropdownMenuItem<String>(
+                  value: task['name'],
+                  child: Row(
+                    children: [
+                      Icon(task['icon']),
+                      const SizedBox(width: 10),
+                      Text(task['name']),
+                    ],
+                  ),
                 );
               }).toList(),
               onChanged: (value) {
