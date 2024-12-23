@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import '../models/task.dart';
 
 class AddTaskScreen extends StatefulWidget {
-  const AddTaskScreen({Key? key}) : super(key: key);
+  final List<Map<String, dynamic>> users;
+  final Function(Task) onTaskAdded;
+
+  const AddTaskScreen({
+    Key? key,
+    required this.users,
+    required this.onTaskAdded,
+  }) : super(key: key);
 
   @override
   _AddTaskScreenState createState() => _AddTaskScreenState();
@@ -11,29 +18,38 @@ class AddTaskScreen extends StatefulWidget {
 class _AddTaskScreenState extends State<AddTaskScreen> {
   String? selectedUser;
   String? selectedTask;
-  final List<String> users = ['Alice', 'Bob', 'Charlie'];
-  final List<String> tasks = ['Cleaning', 'Dishwashing', 'Cooking'];
+  DateTime? selectedDate;
+  final TextEditingController taskController = TextEditingController();
+
+  final List<String> predefinedTasks = [
+    'Cleaning',
+    'Dishwashing',
+    'Cooking',
+    'Shopping',
+    'Repairing'
+  ];
 
   void addTask() {
-    if (selectedUser != null && selectedTask != null) {
+    if (selectedUser != null &&
+        (selectedTask != null || taskController.text.isNotEmpty) &&
+        selectedDate != null) {
       final newTask = Task(
         id: DateTime.now().toString(),
-        taskName: selectedTask!,
+        taskName: selectedTask ?? taskController.text,
         assignedUser: selectedUser!,
+        dueDate: selectedDate!,
       );
 
-      setState(() {
-        globalTasks.add(newTask);
-      });
+      widget.onTaskAdded(newTask);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Task added successfully!')),
+        const SnackBar(content: Text('Task added successfully!')),
       );
 
-      Navigator.pop(context); // Geri dön
+      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select both user and task!')),
+        const SnackBar(content: Text('Please select a user, task, and date!')),
       );
     }
   }
@@ -41,7 +57,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Task')),
+      appBar: AppBar(
+        title: const Text('Add Task'),
+        backgroundColor: Colors.green,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -49,11 +68,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           children: [
             DropdownButton<String>(
               value: selectedUser,
-              hint: Text('Select User'),
-              items: users.map((user) {
-                return DropdownMenuItem(
-                  value: user,
-                  child: Text(user),
+              hint: const Text('Select User'),
+              items: widget.users.map((user) {
+                return DropdownMenuItem<String>(
+                  value: user["name"],
+                  child: Text(user["name"]),
                 );
               }).toList(),
               onChanged: (value) {
@@ -62,11 +81,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 });
               },
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             DropdownButton<String>(
               value: selectedTask,
-              hint: Text('Select Task'),
-              items: tasks.map((task) {
+              hint: const Text('Select Predefined Task'),
+              items: predefinedTasks.map((task) {
                 return DropdownMenuItem(
                   value: task,
                   child: Text(task),
@@ -78,10 +97,40 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 });
               },
             ),
-            SizedBox(height: 32.0),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: taskController,
+              decoration: const InputDecoration(labelText: 'Or Enter Custom Task'),
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now().subtract(const Duration(days: 1)),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (pickedDate != null) {
+                  setState(() {
+                    selectedDate = pickedDate;
+                  });
+                }
+              },
+              icon: const Icon(Icons.calendar_today),
+              label: Text(
+                selectedDate == null
+                    ? "Select Due Date"
+                    : "Due Date: ${selectedDate!.toLocal().toString().split(' ')[0]}",
+              ),
+            ),
+            const SizedBox(height: 32.0),
             ElevatedButton(
               onPressed: addTask,
-              child: Text('Add Task'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
+              child: const Text('Add Task'),
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
+import 'package:intl/intl.dart';
 
 class ListItemsScreen extends StatelessWidget {
   final List<Task> tasks;
@@ -35,22 +36,29 @@ class ListItemsScreen extends StatelessWidget {
                       "No tasks available.",
                       style: TextStyle(color: Colors.black54),
                     )
-                  : Column(
-                      children: tasks.map((task) {
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: tasks.length,
+                      itemBuilder: (context, index) {
+                        final task = tasks[index];
                         return Card(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
                           child: ListTile(
                             leading: const Icon(Icons.task, color: Colors.green),
                             title: Text(task.taskName),
                             subtitle: Text(
-                              task.assignedUser.isEmpty
-                                  ? 'Unassigned Task'
-                                  : 'Assigned to: ${task.assignedUser}',
+                              "Assigned to: ${task.assignedUser}\nDue: ${DateFormat('yyyy-MM-dd').format(task.dueDate)}",
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                // Görev silme işlemi
+                              },
                             ),
                           ),
                         );
-                      }).toList(),
+                      },
                     ),
               const SizedBox(height: 20),
               const Text(
@@ -67,21 +75,23 @@ class ListItemsScreen extends StatelessWidget {
                       "No users available.",
                       style: TextStyle(color: Colors.black54),
                     )
-                  : Column(
-                      children: users.map((user) {
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: users.length,
+                      itemBuilder: (context, index) {
+                        final user = users[index];
                         return Card(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
                           child: ListTile(
-                            leading:
-                                const Icon(Icons.person, color: Colors.green),
+                            leading: const Icon(Icons.person, color: Colors.green),
                             title: Text(user["name"] ?? ""),
                             subtitle: Text(
                               "Payment: ${user["payment"]}₺ | Expense: ${user["expense"]}₺",
                             ),
                           ),
                         );
-                      }).toList(),
+                      },
                     ),
             ],
           ),

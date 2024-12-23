@@ -13,7 +13,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SignInScreen()),
@@ -25,26 +25,33 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1D3E2A),
-      body: Center(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: SplashBackgroundPainter(),
-              ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: SplashBackgroundPainter(),
             ),
-            Center(
-              child: Text(
-                "HOME BALANCE",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "HOME BALANCE",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const CircularProgressIndicator(
                   color: Colors.white,
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -53,7 +60,8 @@ class _SplashScreenState extends State<SplashScreen> {
 class SplashBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()..style = PaintingStyle.fill;
+    final Paint paint = Paint()
+      ..style = PaintingStyle.fill;
 
     paint.color = const Color(0xFF2E5941);
     canvas.drawCircle(Offset(size.width / 2, size.height / 2), 200, paint);
