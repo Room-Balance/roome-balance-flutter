@@ -18,21 +18,14 @@ class CalendarScreen extends StatelessWidget {
         focusedDay: DateTime.now(),
         firstDay: DateTime(2020),
         lastDay: DateTime(2050),
-        eventLoader: (date) {
-          return tasks.where((task) =>
-              task.dueDate.year == date.year &&
+        eventLoader: (date) => tasks.where((task) {
+          return task.dueDate.year == date.year &&
               task.dueDate.month == date.month &&
-              task.dueDate.day == date.day).toList();
-        },
+              task.dueDate.day == date.day;
+        }).toList(),
         calendarStyle: const CalendarStyle(
-          todayDecoration: BoxDecoration(
-            color: Colors.green,
-            shape: BoxShape.circle,
-          ),
-          markerDecoration: BoxDecoration(
-            color: Colors.red,
-            shape: BoxShape.circle,
-          ),
+          todayDecoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+          markerDecoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
         ),
       ),
     );

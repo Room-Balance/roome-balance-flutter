@@ -15,16 +15,12 @@ class ProfileScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.language),
             title: const Text("Change Language"),
-            onTap: () {
-              // Dil seçimi işlemi
-            },
+            onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text("Settings"),
-            onTap: () {
-              // Ayarlar
-            },
+            onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.logout),
