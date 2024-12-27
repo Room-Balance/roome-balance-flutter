@@ -15,12 +15,12 @@ class ProfileScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.language),
             title: const Text("Change Language"),
-            onTap: () {},
+            onTap: () => _showLanguageSelector(context),
           ),
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text("Settings"),
-            onTap: () {},
+            onTap: () => Navigator.pushNamed(context, '/settings'),
           ),
           ListTile(
             leading: const Icon(Icons.logout),
@@ -31,6 +31,42 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showLanguageSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const ListTile(title: Text("Select Language")),
+            ListTile(
+              leading: const Icon(Icons.language),
+              title: const Text("English"),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Language changed to English!")),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.language),
+              title: const Text("Türkçe"),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Dil Türkçe olarak değiştirildi!"),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
