@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/list_items_screen.dart';
 import 'screens/splash_screen.dart';
@@ -11,6 +12,7 @@ import 'screens/profile_screen.dart';
 import 'screens/change_password.dart';
 import 'screens/sign_up_screen.dart';
 import 'screens/forgot_password.dart';
+import 'screens/settings_screen.dart';
 import '../models/task.dart';
 
 void main() {
@@ -24,6 +26,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Home Balance',
       theme: ThemeData(primarySwatch: Colors.green),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('tr'), // Turkish
+      ],
       initialRoute: '/splash',
       routes: {
         '/splash': (context) => SplashScreen(),
@@ -33,6 +44,7 @@ class MyApp extends StatelessWidget {
         '/forgotPassword': (context) => ForgotPasswordScreen(),
         '/signUp': (context) => SignUpScreen(),
         '/changePassword': (context) => ChangePasswordScreen(),
+        '/settings': (context) => SettingsScreen(),
       },
       onGenerateRoute: (settings) {
         switch (settings.name) {
@@ -46,7 +58,7 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => NotificationsScreen(tasks: tasks),
             );
-          case '/addTask': // AddTask rotası için tanım
+          case '/addTask': // AddTask route
             final arguments = settings.arguments as Map<String, dynamic>;
             return MaterialPageRoute(
               builder: (context) => AddTaskScreen(

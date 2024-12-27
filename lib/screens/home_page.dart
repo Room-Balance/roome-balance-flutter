@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../models/task.dart';
 import 'list_items_screen.dart';
 import 'calendar_screen.dart';
 import 'profile_screen.dart';
 import 'package:uuid/uuid.dart';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> {
     },
   ];
 
+  double totalRent = 5000.0; // Default rent amount
   final List<Task> globalTasks = [
     Task(
       id: "1",
@@ -55,7 +56,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pages = [
-      _buildHomeContent(),
+      _buildHomeContent(), // Add the missing home content method here
       ListItemsScreen(tasks: globalTasks, users: users),
       CalendarScreen(tasks: globalTasks),
       ProfileScreen(),
@@ -70,14 +71,24 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.green,
         actions: [
           IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: _editTotalRent,
+          ),
+          IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              Navigator.pushNamed(context, '/notifications', arguments: globalTasks);
+              Navigator.pushNamed(context, '/notifications',
+                  arguments: globalTasks);
             },
           ),
         ],
       ),
-      body: _pages[_currentIndex],
+      body: Column(
+        children: [
+          _buildRentPieChart(), // Rent pie chart
+          Expanded(child: _pages[_currentIndex]),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddOptions,
         backgroundColor: Colors.green,
@@ -133,6 +144,112 @@ class _HomePageState extends State<HomePage> {
           );
   }
 
+  Widget _buildRentPieChart() {
+    double rentPaid =
+        users.fold(0, (sum, user) => sum + (user['payment'] as double));
+    double rentRemaining = totalRent - rentPaid;
+
+    if (rentRemaining <= 0) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Card(
+          elevation: 4,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Column(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green, size: 80),
+              const Text(
+                "Rent is fully paid for this month! 🎉",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Text(
+                "Rent Status",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(
+              height: 200,
+              child: PieChart(
+                PieChartData(
+                  sections: [
+                    PieChartSectionData(
+                      value: rentPaid,
+                      color: Colors.green.shade400,
+                      title: 'Paid\n${rentPaid.toStringAsFixed(2)}₺',
+                      radius: 50,
+                      titleStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    PieChartSectionData(
+                      value: rentRemaining > 0 ? rentRemaining : 0,
+                      color: Colors.red.shade400,
+                      title: 'Remaining\n${rentRemaining.toStringAsFixed(2)}₺',
+                      radius: 50,
+                      titleStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                  sectionsSpace: 4,
+                  centerSpaceRadius: 40,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _editTotalRent() {
+    final rentController = TextEditingController(text: totalRent.toString());
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit Total Rent"),
+          content: TextField(
+            controller: rentController,
+            decoration: const InputDecoration(hintText: "Enter Total Rent (₺)"),
+            keyboardType: TextInputType.number,
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  totalRent = double.tryParse(rentController.text) ?? totalRent;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showAddOptions() {
     showModalBottomSheet(
       context: context,
@@ -158,7 +275,9 @@ class _HomePageState extends State<HomePage> {
 
   void _addUser() {
     final nameController = TextEditingController();
-    final emailController = TextEditingController();
+    final paymentController = TextEditingController();
+    final expenseController = TextEditingController(); // Added for expense
+
     showDialog(
       context: context,
       builder: (context) {
@@ -172,8 +291,14 @@ class _HomePageState extends State<HomePage> {
                 decoration: const InputDecoration(hintText: "User Name"),
               ),
               TextField(
-                controller: emailController,
-                decoration: const InputDecoration(hintText: "User Email"),
+                controller: paymentController,
+                decoration: const InputDecoration(hintText: "Payment"),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: expenseController, // Input for expense
+                decoration: const InputDecoration(hintText: "Expense"),
+                keyboardType: TextInputType.number,
               ),
             ],
           ),
@@ -183,9 +308,9 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   users.add({
                     "name": nameController.text,
-                    "email": emailController.text,
-                    "payment": 0.0,
-                    "expense": 0.0,
+                    "payment": double.tryParse(paymentController.text) ?? 0.0,
+                    "expense": double.tryParse(expenseController.text) ??
+                        0.0, // Add expense here
                   });
                 });
                 Navigator.pop(context);
@@ -213,4 +338,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
