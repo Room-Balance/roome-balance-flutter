@@ -1,26 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignInScreen extends StatelessWidget {
-  const SignInScreen({super.key});
+  const SignInScreen({Key? key}) : super(key: key);
 
-  // Google Sign-In Method
   Future<void> _signInWithGoogle(BuildContext context) async {
-    try {
-      final GoogleSignIn _googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? account = await _googleSignIn.signIn();
+  try {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    final GoogleSignInAccount? account = await googleSignIn.signIn();
 
-      if (account != null) {
-        // Başarıyla giriş yaptıktan sonra Ana Sayfaya yönlendir
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    } catch (e) {
-      print("Error signing in: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Google Sign-In failed, try again.")),
+    if (account != null) {
+      final GoogleSignInAuthentication auth = await account.authentication;
+
+      // Firebase Authentication için gerekli token
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: auth.accessToken,
+        idToken: auth.idToken,
       );
+
+      // Firebase üzerinden giriş yap
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      // Başarılıysa HomePage'e yönlendir
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      throw Exception("Google Sign-In canceled");
     }
+  } catch (e) {
+    debugPrint("Error during Google Sign-In: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Google Sign-In failed, try again.")),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -32,45 +45,43 @@ class SignInScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40), // Üst boşluk
-              IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 60), 
               const Text(
                 "Sign in",
                 style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(height: 10),
               const Text(
-                "Welcome Back\nHello there, sign in to continue",
-                style:
-                    TextStyle(fontSize: 16, color: Colors.white70, height: 1.5),
+                "Welcome Back!\nPlease sign in to continue",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white70,
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 40),
               Center(
                 child: Image.asset(
-                  'assets/images/sign_in_logo.png',
+                  'assets/images/sign_in.png',
                   height: 150,
                 ),
               ),
               const SizedBox(height: 30),
-              // Username Field
               TextField(
                 decoration: InputDecoration(
                   hintText: "Username",
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              // Password Field
               TextField(
                 obscureText: true,
                 decoration: InputDecoration(
@@ -78,7 +89,8 @@ class SignInScreen extends StatelessWidget {
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -89,13 +101,13 @@ class SignInScreen extends StatelessWidget {
                   child: const Text(
                     "Forgot your password?",
                     style: TextStyle(
-                        color: Colors.white70,
-                        decoration: TextDecoration.underline),
+                      color: Colors.white70,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 30),
-              // Sign In Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -106,32 +118,36 @@ class SignInScreen extends StatelessWidget {
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text("Sign in",
-                      style: TextStyle(fontSize: 18, color: Colors.white)),
+                  child: const Text(
+                    "Sign in",
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              // OR Divider
               Row(
                 children: const [
                   Expanded(child: Divider(color: Colors.white)),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text("OR", style: TextStyle(color: Colors.white70)),
+                    child: Text(
+                      "OR",
+                      style: TextStyle(color: Colors.white70),
+                    ),
                   ),
                   Expanded(child: Divider(color: Colors.white)),
                 ],
               ),
               const SizedBox(height: 20),
-              // Google Sign-In Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () => _signInWithGoogle(context),
                   icon: Image.asset(
-                    'assets/images/google_logo.png', // Google logo ekleyin
+                    'assets/images/google_icon.png',
                     height: 24,
                   ),
                   label: const Text(
@@ -142,7 +158,8 @@ class SignInScreen extends StatelessWidget {
                     backgroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -153,9 +170,10 @@ class SignInScreen extends StatelessWidget {
                   child: const Text(
                     "Don't have an account? Sign Up",
                     style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                        decoration: TextDecoration.underline),
+                      color: Colors.white70,
+                      fontSize: 16,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ),
