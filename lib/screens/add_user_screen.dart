@@ -53,6 +53,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
       appBar: AppBar(
         title: const Text("Add User and Rent"),
         backgroundColor: Colors.green,
+        leading: Container(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

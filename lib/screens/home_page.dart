@@ -19,14 +19,16 @@ class _HomePageState extends State<HomePage> {
     {
       "name": "Alice",
       "email": "alice@example.com",
-      "payment": 150.0,
-      "expense": 50.0,
+      "payment": 150.0, // Total rent paid
+      "expense": 50.0, // Total expense
+      "houseExpense": 50.0, // House expense
     },
     {
       "name": "Bob",
       "email": "bob@example.com",
       "payment": 200.0,
       "expense": 100.0,
+      "houseExpense": 100.0,
     },
   ];
 
@@ -64,68 +66,101 @@ class _HomePageState extends State<HomePage> {
     ];
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Home Balance"),
-        backgroundColor: Colors.green,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: _editTotalRent,
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              Navigator.pushNamed(context, '/notifications',
-                  arguments: globalTasks);
-            },
-          ),
-        ],
-      ),
-      body: Column(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Row(
         children: [
+          Icon(Icons.home, size: 28), // Home icon stays here
+          SizedBox(width: 8), // Space between icon and text
+          Text(
+            "Home Balance",
+            style: TextStyle(
+              fontWeight: FontWeight.bold, // Bold text for title
+              fontSize: 20, // Adjusted font size
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: Colors.green,
+      automaticallyImplyLeading: false, // Removes the back button
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: _editTotalRent,
+        ),
+        IconButton(
+          icon: const Icon(Icons.attach_money),
+          onPressed: _showPaymentDialog,
+        ),
+        IconButton(
+          icon: const Icon(Icons.notifications),
+          onPressed: () {
+            Navigator.pushNamed(context, '/notifications', arguments: globalTasks);
+          },
+        ),
+      ],
+    ),
+    body: Column(
+      children: [
+        if (_currentIndex == 0) ...[
           _buildRentPieChart(), // Rent pie chart
-          Expanded(child: _pages[_currentIndex]),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildExpenseList(), // Expense table
+                ],
+              ),
+            ),
+          ),
+        ] else ...[
+          Expanded(child: _pages[_currentIndex]), // Other pages
         ],
+      ],
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: _showAddOptions,
+      backgroundColor: Colors.green,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15), // Rounded corners
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddOptions,
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        backgroundColor: Colors.white,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Tasks',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Calendar',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
+      child: const Icon(Icons.add, size: 28),
+    ),
+    bottomNavigationBar: BottomNavigationBar(
+      currentIndex: _currentIndex,
+      onTap: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      backgroundColor: Colors.white,
+      selectedItemColor: Colors.green,
+      unselectedItemColor: Colors.grey,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.list),
+          label: 'Tasks',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.calendar_today),
+          label: 'Calendar',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Profile',
+        ),
+      ],
+    ),
+  );
+}
+
+
 
   Widget _buildHomeContent() {
     return globalTasks.isEmpty
@@ -146,12 +181,59 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildRentPieChart() {
-  double rentPaid = users.fold(0, (sum, user) => sum + (user['payment'] as double));
-  double rentRemaining = totalRent - rentPaid;
+    double rentPaid =
+        users.fold(0, (sum, user) => sum + (user['payment'] as double));
+    double rentRemaining = totalRent - rentPaid;
 
-  return buildEnhancedRentPieChart(rentPaid, rentRemaining);
-}
+    return buildEnhancedRentPieChart(rentPaid, rentRemaining);
+  }
 
+  Widget _buildExpenseList() {
+    return Card(
+      margin: const EdgeInsets.all(12),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Other Expenses",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Divider(),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                final user = users[index];
+                return ListTile(
+                  leading:
+                      const Icon(Icons.account_circle, color: Colors.green),
+                  title: Text(user['name']),
+                  subtitle: Text(
+                    "Rent Paid: ${user['payment']}₺\n"
+                    "House Expense: ${user['houseExpense']}₺",
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _addPayment(String userName, double paymentAmount) {
+    setState(() {
+      final user = users.firstWhere((u) => u['name'] == userName);
+      user['payment'] += paymentAmount;
+    });
+  }
 
   void _editTotalRent() {
     final rentController = TextEditingController(text: totalRent.toString());
@@ -181,33 +263,47 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showAddOptions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Column(
+void _showAddOptions() {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.person_add),
+              leading: const Icon(Icons.person_add, color: Colors.green),
               title: const Text("Add User"),
-              onTap: _addUser,
+              onTap: () {
+                Navigator.pop(context); // Close the modal
+                _addUser();
+              },
             ),
+            const Divider(),
             ListTile(
-              leading: const Icon(Icons.task),
+              leading: const Icon(Icons.task, color: Colors.blue),
               title: const Text("Add Task"),
-              onTap: _addTask,
+              onTap: () {
+                Navigator.pop(context); // Close the modal
+                _addTask();
+              },
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+
 
   void _addUser() {
     final nameController = TextEditingController();
-    final paymentController = TextEditingController();
-    final expenseController = TextEditingController(); // Added for expense
+    final rentPaymentController = TextEditingController(); // Rent payment
+    final houseExpenseController = TextEditingController(); // House expense
 
     showDialog(
       context: context,
@@ -222,13 +318,13 @@ class _HomePageState extends State<HomePage> {
                 decoration: const InputDecoration(hintText: "User Name"),
               ),
               TextField(
-                controller: paymentController,
-                decoration: const InputDecoration(hintText: "Payment"),
+                controller: rentPaymentController,
+                decoration: const InputDecoration(hintText: "Rent Payment"),
                 keyboardType: TextInputType.number,
               ),
               TextField(
-                controller: expenseController, // Input for expense
-                decoration: const InputDecoration(hintText: "Expense"),
+                controller: houseExpenseController,
+                decoration: const InputDecoration(hintText: "House Expense"),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -239,14 +335,68 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   users.add({
                     "name": nameController.text,
-                    "payment": double.tryParse(paymentController.text) ?? 0.0,
-                    "expense": double.tryParse(expenseController.text) ??
-                        0.0, // Add expense here
+                    "payment":
+                        double.tryParse(rentPaymentController.text) ?? 0.0,
+                    "expense":
+                        double.tryParse(houseExpenseController.text) ?? 0.0,
+                    "houseExpense":
+                        double.tryParse(houseExpenseController.text) ?? 0.0,
                   });
                 });
                 Navigator.pop(context);
               },
               child: const Text("Add"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showPaymentDialog() {
+    String? selectedUser;
+    final paymentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Add Payment"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButton<String>(
+                hint: const Text("Select User"),
+                value: selectedUser,
+                items: users.map((user) {
+                  return DropdownMenuItem<String>(
+                    value: user['name'],
+                    child: Text(user['name']),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedUser = value;
+                  });
+                },
+              ),
+              TextField(
+                controller: paymentController,
+                decoration: const InputDecoration(hintText: "Payment Amount"),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                if (selectedUser != null && paymentController.text.isNotEmpty) {
+                  _addPayment(
+                      selectedUser!, double.parse(paymentController.text));
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("Add Payment"),
             ),
           ],
         );

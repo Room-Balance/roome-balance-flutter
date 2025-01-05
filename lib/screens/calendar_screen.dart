@@ -14,6 +14,7 @@ class CalendarScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text("Calendar"),
           backgroundColor: Colors.green,
+          leading: Container(),
         ),
         body: SingleChildScrollView(
           child: Padding(

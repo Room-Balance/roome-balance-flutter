@@ -15,6 +15,7 @@ class ListItemsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Tasks and Users'),
         backgroundColor: Colors.green,
+        leading: Container(),
       ),
       body: SingleChildScrollView(
         child: Padding(
