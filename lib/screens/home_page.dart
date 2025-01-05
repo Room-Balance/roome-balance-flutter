@@ -180,90 +180,137 @@ Widget build(BuildContext context) {
           );
   }
 
-  Widget _buildRentPieChart() {
-    double rentPaid =
-        users.fold(0, (sum, user) => sum + (user['payment'] as double));
-    double rentRemaining = totalRent - rentPaid;
+Widget _buildRentPieChart() {
+  double rentPaid = users.fold(0, (sum, user) => sum + (user['payment'] as double));
+  bool isFullyPaid = rentPaid >= totalRent;
 
-    return buildEnhancedRentPieChart(rentPaid, rentRemaining);
-  }
-
-  Widget _buildExpenseList() {
-    return Card(
-      margin: const EdgeInsets.all(12),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Other Expenses",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Divider(),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                final user = users[index];
-                return ListTile(
-                  leading:
-                      const Icon(Icons.account_circle, color: Colors.green),
-                  title: Text(user['name']),
-                  subtitle: Text(
-                    "Rent Paid: ${user['payment']}₺\n"
-                    "House Expense: ${user['houseExpense']}₺",
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+  if (isFullyPaid) {
+    return Center(
+      child: Column(
+        children: const [
+          Icon(Icons.check_circle, size: 60, color: Colors.green),
+          Text("Rent Fully Paid", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }
 
-  void _addPayment(String userName, double paymentAmount) {
-    setState(() {
-      final user = users.firstWhere((u) => u['name'] == userName);
-      user['payment'] += paymentAmount;
-    });
+  double rentRemaining = totalRent - rentPaid;
+  return buildEnhancedRentPieChart(rentPaid, rentRemaining);
+}
+
+
+Widget _buildExpenseList() {
+  return Card(
+    margin: const EdgeInsets.all(12),
+    elevation: 3,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Other Expenses",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Divider(),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              final user = users[index];
+              return ListTile(
+                leading:
+                    const Icon(Icons.account_circle, color: Colors.green),
+                title: Text(user['name']),
+                subtitle: Text(
+                  "Rent Payment: ${user['payment']}₺\n"
+                  "House Expense: ${user['houseExpense']}₺",
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildUserPaymentsPieChart() {
+  double totalPayments = users.fold(0, (sum, user) => sum + (user['payment'] as double));
+
+  return SizedBox(
+    height: 200,
+    child: PieChart(
+      PieChartData(
+        sections: users.map((user) {
+          double paymentPercentage = (user['payment'] as double) / totalPayments * 100;
+          return PieChartSectionData(
+            color: Colors.primaries[users.indexOf(user) % Colors.primaries.length],
+            value: paymentPercentage,
+            title: "${user['name']} ${paymentPercentage.toStringAsFixed(1)}%",
+            radius: 50,
+            titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          );
+        }).toList(),
+      ),
+    ),
+  );
+}
+
+void _addPayment(String userName, double paymentAmount) {
+  double rentPaid = users.fold(0, (sum, user) => sum + (user['payment'] as double));
+  if (rentPaid >= totalRent) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Rent is fully paid! Update the rent amount to continue.')),
+    );
+    return;
   }
 
-  void _editTotalRent() {
-    final rentController = TextEditingController(text: totalRent.toString());
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Edit Total Rent"),
-          content: TextField(
-            controller: rentController,
-            decoration: const InputDecoration(hintText: "Enter Total Rent (₺)"),
-            keyboardType: TextInputType.number,
+  setState(() {
+    final user = users.firstWhere((u) => u['name'] == userName);
+    user['payment'] += paymentAmount;
+  });
+}
+
+
+void _editTotalRent() {
+  final rentController = TextEditingController(text: totalRent.toString());
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Edit Total Rent"),
+        content: TextField(
+          controller: rentController,
+          decoration: const InputDecoration(hintText: "Enter Total Rent (₺)"),
+          keyboardType: TextInputType.number,
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                totalRent = double.tryParse(rentController.text) ?? totalRent;
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
           ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  totalRent = double.tryParse(rentController.text) ?? totalRent;
-                });
-                Navigator.pop(context);
-              },
-              child: const Text("Save"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+        ],
+      );
+    },
+  );
+}
+
 
 void _showAddOptions() {
+  double rentPaid = users.fold(0, (sum, user) => sum + (user['payment'] as double));
+  bool isFullyPaid = rentPaid >= totalRent;
+
   showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
@@ -278,17 +325,20 @@ void _showAddOptions() {
             ListTile(
               leading: const Icon(Icons.person_add, color: Colors.green),
               title: const Text("Add User"),
-              onTap: () {
-                Navigator.pop(context); // Close the modal
-                _addUser();
-              },
+              enabled: !isFullyPaid, // Kira ödendiyse devre dışı bırak
+              onTap: isFullyPaid
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                      _addUser();
+                    },
             ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.task, color: Colors.blue),
               title: const Text("Add Task"),
               onTap: () {
-                Navigator.pop(context); // Close the modal
+                Navigator.pop(context);
                 _addTask();
               },
             ),
@@ -300,58 +350,73 @@ void _showAddOptions() {
 }
 
 
-  void _addUser() {
-    final nameController = TextEditingController();
-    final rentPaymentController = TextEditingController(); // Rent payment
-    final houseExpenseController = TextEditingController(); // House expense
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Add User"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(hintText: "User Name"),
-              ),
-              TextField(
-                controller: rentPaymentController,
-                decoration: const InputDecoration(hintText: "Rent Payment"),
-                keyboardType: TextInputType.number,
-              ),
-              TextField(
-                controller: houseExpenseController,
-                decoration: const InputDecoration(hintText: "House Expense"),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  users.add({
-                    "name": nameController.text,
-                    "payment":
-                        double.tryParse(rentPaymentController.text) ?? 0.0,
-                    "expense":
-                        double.tryParse(houseExpenseController.text) ?? 0.0,
-                    "houseExpense":
-                        double.tryParse(houseExpenseController.text) ?? 0.0,
-                  });
-                });
-                Navigator.pop(context);
-              },
-              child: const Text("Add"),
+
+void _addUser() {
+  // Kira ödemesi kontrolü
+  double rentPaid = users.fold(0, (sum, user) => sum + (user['payment'] as double));
+  if (rentPaid >= totalRent) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Rent is fully paid! You cannot add new users.'),
+      ),
+    );
+    return; // Kullanıcı eklenmesini engelle
+  }
+
+  // Kullanıcı ekleme işlemleri
+  final nameController = TextEditingController();
+  final rentPaymentController = TextEditingController();
+  final houseExpenseController = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Add User"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(hintText: "User Name"),
+            ),
+            TextField(
+              controller: rentPaymentController,
+              decoration: const InputDecoration(hintText: "Rent Payment"),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: houseExpenseController,
+              decoration: const InputDecoration(hintText: "House Expense"),
+              keyboardType: TextInputType.number,
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                users.add({
+                  "name": nameController.text,
+                  "payment":
+                      double.tryParse(rentPaymentController.text) ?? 0.0,
+                  "expense":
+                      double.tryParse(houseExpenseController.text) ?? 0.0,
+                  "houseExpense":
+                      double.tryParse(houseExpenseController.text) ?? 0.0,
+                });
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Add"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   void _showPaymentDialog() {
     String? selectedUser;
