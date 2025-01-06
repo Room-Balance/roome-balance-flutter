@@ -34,7 +34,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
+  generate: true
+  
   assets:
     - assets/images/clean.jpg
     - assets/images/dishwasher.jpg
@@ -45,3 +46,4 @@ flutter:
     - assets/images/sign_in.png
     - assets/images/splash_screen_logo.png
     - assets/images/google_icon.png
+

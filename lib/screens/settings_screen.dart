@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class SettingsScreen extends StatelessWidget {
   // Constructor no longer const to handle non-constant fields
-  SettingsScreen({Key? key}) : super(key: key);
+  SettingsScreen({super.key});
 
   // TextEditingController objects to manage user input
   final TextEditingController nameController = TextEditingController();
@@ -14,7 +14,6 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Settings"), // Title of the screen
         backgroundColor: Colors.green, // App bar color
-        leading: Container(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0), // Adds padding around the screen

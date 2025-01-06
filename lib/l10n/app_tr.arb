@@ -1,0 +1,18 @@
+{
+    "profileTitle": "Profil",
+    "@profileTitle": {
+      "description": "Profil ekranı başlığı"
+    },
+    "changeLanguage": "Dili Değiştir",
+    "@changeLanguage": {
+      "description": "Dili değiştirme buton metni"
+    },
+    "settings": "Ayarlar",
+    "@settings": {
+      "description": "Ayarlar seçeneği"
+    },
+    "logout": "Çıkış Yap",
+    "@logout": {
+      "description": "Çıkış yap buton metni"
+    }
+  }

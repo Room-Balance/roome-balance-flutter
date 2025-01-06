@@ -14,4 +14,4 @@ class Task {
     required this.dueDate,
     this.icon,
   });
-}
+} 

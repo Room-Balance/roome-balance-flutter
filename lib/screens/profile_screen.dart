@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import '../main.dart'; 
+import '../main.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile"),
+        title: Text(AppLocalizations.of(context)!.profileTitle),
         backgroundColor: Colors.green,
         leading: Container(),
       ),
@@ -16,17 +17,17 @@ class ProfileScreen extends StatelessWidget {
         children: [
           ListTile(
             leading: const Icon(Icons.language),
-            title: const Text("Change Language"),
+            title: Text(AppLocalizations.of(context)!.changeLanguage),
             onTap: () => _showLanguageSelector(context),
           ),
           ListTile(
             leading: const Icon(Icons.settings),
-            title: const Text("Settings"),
+            title: Text(AppLocalizations.of(context)!.settings),
             onTap: () => Navigator.pushNamed(context, '/settings'),
           ),
           ListTile(
             leading: const Icon(Icons.logout),
-            title: const Text("Logout"),
+            title: Text(AppLocalizations.of(context)!.logout),
             onTap: () {
               Navigator.pushReplacementNamed(context, '/signIn');
             },
@@ -37,36 +38,60 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _showLanguageSelector(BuildContext context) {
+    final Map<String, Locale> languages = {
+      'English': const Locale('en'),
+      'Türkçe': const Locale('tr'),
+    };
+
     showModalBottomSheet(
       context: context,
       builder: (context) {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const ListTile(title: Text("Select Language")),
             ListTile(
-              leading: const Icon(Icons.language),
-              title: const Text("English"),
-              onTap: () {
-                Navigator.pop(context);
-                MyApp.of(context)!.setLocale(const Locale('en')); // English için
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Language changed to English!")),
-                );
-              },
+              title: Text(AppLocalizations.of(context)!.changeLanguage),
             ),
-            ListTile(
-              leading: const Icon(Icons.language),
-              title: const Text("Türkçe"),
-              onTap: () {
+            ...languages.entries.map((entry) {
+              return ListTile(
+                leading: const Icon(Icons.language),
+                title: Text(entry.key),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmLanguageChange(context, entry.key, entry.value);
+                },
+              );
+            }),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmLanguageChange(
+      BuildContext context, String languageName, Locale locale) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.changeLanguage),
+          content: Text(
+              "Are you sure you want to change the language to $languageName?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // İptal
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
                 Navigator.pop(context);
-                MyApp.of(context)!.setLocale(const Locale('tr')); // Türkçe için
+                MyApp.of(context)?.setLocale(locale);
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Dil Türkçe olarak değiştirildi!"),
-                  ),
+                  SnackBar(content: Text("Language changed to $languageName!")),
                 );
               },
+              child: const Text("Confirm"),
             ),
           ],
         );

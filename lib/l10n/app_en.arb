@@ -1,0 +1,18 @@
+{
+    "profileTitle": "Profile",
+    "@profileTitle": {
+      "description": "Title for the profile screen"
+    },
+    "changeLanguage": "Change Language",
+    "@changeLanguage": {
+      "description": "Button text to change language"
+    },
+    "settings": "Settings",
+    "@settings": {
+      "description": "Settings option"
+    },
+    "logout": "Logout",
+    "@logout": {
+      "description": "Logout button text"
+    }
+  }
