@@ -25,6 +25,7 @@ dependencies:
   uuid: ^3.0.6
   flutter_localizations:
     sdk: flutter  # Localization support
+  http: ^1.2.2
 
 
 dev_dependencies:

@@ -20,7 +20,7 @@ class _ListItemsScreenState extends State<ListItemsScreen> {
   @override
   void initState() {
     super.initState();
-    tasks = List.from(widget.tasks); // Starting `tasks` list 
+    tasks = List.from(widget.tasks);
   }
 
   @override
@@ -28,8 +28,8 @@ class _ListItemsScreenState extends State<ListItemsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tasks and Users'),
-        backgroundColor: Colors.green,
-        leading: Container(),
+        backgroundColor: Colors.green.shade600,
+        leading: const SizedBox(),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -39,14 +39,22 @@ class _ListItemsScreenState extends State<ListItemsScreen> {
             children: [
               const Text(
                 "Payment Distribution",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
               const SizedBox(height: 10),
               _buildUserPaymentsPieChart(),
               const SizedBox(height: 20),
               const Text(
                 "Assigned Tasks",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
               const SizedBox(height: 10),
               _buildTaskTable(),
@@ -79,71 +87,130 @@ class _ListItemsScreenState extends State<ListItemsScreen> {
               color: Colors.primaries[widget.users.indexOf(user) % Colors.primaries.length],
               value: paymentPercentage,
               title: "${user['name']} ${paymentPercentage.toStringAsFixed(1)}%",
+              titleStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
               radius: 50,
-              titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             );
           }).toList(),
+          sectionsSpace: 4,
+          centerSpaceRadius: 40,
         ),
       ),
     );
   }
 
-Widget _buildTaskTable() {
-  return Card(
-    margin: const EdgeInsets.symmetric(vertical: 16.0),
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Assigned Tasks",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          tasks.isEmpty
-              ? const Center(
-                  child: Text(
-                    "No tasks assigned.",
-                    style: TextStyle(color: Colors.black54),
-                  ),
-                )
-              : SingleChildScrollView(
-                  scrollDirection: Axis.horizontal, // Yatay kaydırma
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(label: Text("Task Name")),
-                      DataColumn(label: Text("User")),
-                      DataColumn(label: Text("Due Date")),
-                      DataColumn(label: Text("Actions")),
-                    ],
-                    rows: tasks.map((task) {
-                      return DataRow(cells: [
-                        DataCell(Text(task.taskName)),
-                        DataCell(Text(task.assignedUser)),
-                        DataCell(Text(DateFormat('yyyy-MM-dd').format(task.dueDate))),
-                        DataCell(
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              _deleteTask(task);
-                            },
+  Widget _buildTaskTable() {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 16.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Assigned Tasks",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 10),
+            tasks.isEmpty
+                ? const Center(
+                    child: Text(
+                      "No tasks assigned.",
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                  )
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columnSpacing: 16,
+                      columns: const [
+                        DataColumn(
+                          label: Text(
+                            "Task Name",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
-                      ]);
-                    }).toList(),
+                        DataColumn(
+                          label: Text(
+                            "User",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Text(
+                            "Due Date",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Text(
+                            "Actions",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ],
+                      rows: tasks.map((task) {
+                        return DataRow(cells: [
+                          DataCell(Text(
+                            task.taskName,
+                            style: const TextStyle(color: Colors.black),
+                          )),
+                          DataCell(Text(
+                            task.assignedUser,
+                            style: const TextStyle(color: Colors.black),
+                          )),
+                          DataCell(Text(
+                            DateFormat('yyyy-MM-dd').format(task.dueDate),
+                            style: const TextStyle(color: Colors.black),
+                          )),
+                          DataCell(
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                _deleteTask(task);
+                              },
+                            ),
+                          ),
+                        ]);
+                      }).toList(),
+                    ),
                   ),
-                ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   void _deleteTask(Task task) {
     setState(() {
-      tasks.remove(task); 
+      tasks.remove(task);
     });
 
     ScaffoldMessenger.of(context).showSnackBar(

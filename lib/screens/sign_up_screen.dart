@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 
 class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({super.key}); 
+  const SignUpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.green[900],
+      appBar: AppBar(
+        backgroundColor: Colors.green[800],
+        title: const Text("Sign Up"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context), // Geri tuşu
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

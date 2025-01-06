@@ -60,7 +60,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       appBar: AppBar(
         title: const Text('Add Task'),
         backgroundColor: Colors.green,
-        leading: Container(),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

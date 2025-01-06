@@ -170,7 +170,7 @@ Widget build(BuildContext context) {
             itemBuilder: (context, index) {
               final task = globalTasks[index];
               return ListTile(
-                leading: Icon(task.icon, color: Colors.green),
+                leading: Icon(task.icon, color: const Color.fromARGB(255, 11, 222, 18)),
                 title: Text(task.taskName),
                 subtitle: Text(
                   "${task.assignedUser} - ${task.dueDate.toLocal()}",
