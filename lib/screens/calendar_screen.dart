@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../models/task.dart';
+import '../models/models.dart';
 
 class CalendarScreen extends StatefulWidget {
   final List<Task> tasks;

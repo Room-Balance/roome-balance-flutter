@@ -1,8 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:home_balance_flutter/services/api_service.dart';
 
 class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({super.key}); 
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final ApiService _apiService = ApiService();
+
+  Future<void> _signUp(BuildContext context) async {
+    try {
+      final email = emailController.text.trim();
+      final password = passwordController.text.trim();
+      final name = nameController.text.trim();
+
+      if (email.isEmpty || password.isEmpty || name.isEmpty) {
+        throw Exception("All fields are required");
+      }
+
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final idToken = await userCredential.user?.getIdToken();
+      if (idToken != null) {
+        await _apiService.post(
+          'users',
+          {'name': name, 'email': email, 'firebase_uid': userCredential.user!.uid},
+          idToken,
+        );
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } catch (e) {
+      debugPrint("Error during Sign-Up: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Sign-Up failed, try again.")),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,3 +113,5 @@ class SignUpScreen extends StatelessWidget {
     );
   }
 }
+  // Add UI code here as per existing structure
+

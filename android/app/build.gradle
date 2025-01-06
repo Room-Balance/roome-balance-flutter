@@ -45,3 +45,12 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.1.1') // Ensure this is the latest version
+    implementation 'com.google.firebase:firebase-auth' // Firebase Authentication SDK
+    implementation 'com.google.firebase:firebase-database' // Firebase Realtime Database (optional)
+    implementation 'com.google.firebase:firebase-core' // Firebase Core SDK
+}
+
+

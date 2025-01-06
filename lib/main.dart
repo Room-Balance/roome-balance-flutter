@@ -16,7 +16,7 @@ import 'screens/change_password.dart';
 import 'screens/sign_up_screen.dart';
 import 'screens/forgot_password.dart';
 import 'screens/settings_screen.dart';
-import '../models/task.dart';
+import 'models/models.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -82,11 +82,11 @@ class _MyAppState extends State<MyApp> {
   Map<String, WidgetBuilder> _buildRoutes() {
     return {
       '/splash': (context) => const SplashScreen(),
-      '/signIn': (context) => const SignInScreen(),
-      '/home': (context) => const HomePage(),
+      '/signIn': (context) => SignInScreen(),
+      '/home': (context) =>  HomePage(),
       '/profile': (context) => const ProfileScreen(),
       '/forgotPassword': (context) => const ForgotPasswordScreen(),
-      '/signUp': (context) => const SignUpScreen(),
+      '/signUp': (context) =>  SignUpScreen(),
       '/changePassword': (context) => const ChangePasswordScreen(),
       '/settings': (context) => SettingsScreen(),
     };

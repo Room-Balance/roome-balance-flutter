@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/task.dart';
+import '../models/models.dart';
 
 class NotificationsScreen extends StatelessWidget {
   final List<Task> tasks;

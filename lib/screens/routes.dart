@@ -16,11 +16,11 @@ import 'package:home_balance_flutter/screens/settings_screen.dart';
 
 Map<String, WidgetBuilder> appRoutes = {
   '/splash': (context) => const SplashScreen(),
-  '/signIn': (context) => const SignInScreen(),
-  '/home': (context) => const HomePage(),
+  '/signIn': (context) => SignInScreen(),
+  '/home': (context) =>  HomePage(),
   '/profile': (context) => const ProfileScreen(),
   '/forgotPassword': (context) => const ForgotPasswordScreen(),
-  '/signUp': (context) => const SignUpScreen(),
+  '/signUp': (context) =>  SignUpScreen(),
   '/changePassword': (context) => const ChangePasswordScreen(),
   '/settings': (context) => SettingsScreen(),
 };

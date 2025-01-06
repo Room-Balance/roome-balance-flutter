@@ -1,42 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:home_balance_flutter/services/api_service.dart';
+import 'package:home_balance_flutter/services/cache_service.dart';
 
 class SignInScreen extends StatelessWidget {
-  const SignInScreen({Key? key}) : super(key: key);
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final ApiService _apiService = ApiService();
+  final CacheService _cacheService = CacheService();
 
   Future<void> _signInWithGoogle(BuildContext context) async {
-  try {
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-    final GoogleSignInAccount? account = await googleSignIn.signIn();
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? account = await googleSignIn.signIn();
 
-    if (account != null) {
-      final GoogleSignInAuthentication auth = await account.authentication;
+      if (account != null) {
+        final GoogleSignInAuthentication auth = await account.authentication;
 
-      // Firebase Authentication için gerekli token
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: auth.accessToken,
-        idToken: auth.idToken,
+        // Firebase Authentication for Google Sign-In
+        final OAuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: auth.accessToken,
+          idToken: auth.idToken,
+        );
+
+        await _auth.signInWithCredential(credential);
+
+        // Fetch data from backend and navigate to HomePage
+        final idToken = await _auth.currentUser?.getIdToken();
+        if (idToken != null) {
+          await _apiService.getUserData(idToken);
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          throw Exception("Unable to retrieve Firebase ID token");
+        }
+      } else {
+        throw Exception("Google Sign-In canceled");
+      }
+    } catch (e) {
+      debugPrint("Error during Google Sign-In: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Google Sign-In failed, try again.")),
+      );
+    }
+  }
+
+  Future<void> _signInWithEmail(BuildContext context, String email, String password) async {
+    try {
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      // Firebase üzerinden giriş yap
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      // Başarılıysa HomePage'e yönlendir
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      throw Exception("Google Sign-In canceled");
+      final idToken = await userCredential.user?.getIdToken();
+      if (idToken != null) {
+        await _apiService.getUserData(idToken);
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } catch (e) {
+      debugPrint("Error during Email Sign-In: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Email Sign-In failed, try again.")),
+      );
     }
-  } catch (e) {
-    debugPrint("Error during Google Sign-In: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Google Sign-In failed, try again.")),
-    );
   }
-}
 
-  @override
+  // UI remains the same, handling updates to integrate new functionality
+    @override
   Widget build(BuildContext context) {
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+
     return Scaffold(
       backgroundColor: const Color(0xFF1A3C34),
       body: SingleChildScrollView(
@@ -45,7 +78,7 @@ class SignInScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 60), 
+              const SizedBox(height: 60),
               const Text(
                 "Sign in",
                 style: TextStyle(
@@ -72,6 +105,7 @@ class SignInScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               TextField(
+                controller: emailController,
                 decoration: InputDecoration(
                   hintText: "Username",
                   filled: true,
@@ -83,6 +117,7 @@ class SignInScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               TextField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: "Password",
@@ -112,7 +147,9 @@ class SignInScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/home');
+                    final String email = emailController.text.trim();
+                    final String password = passwordController.text.trim();
+                    _signInWithEmail(context, email, password);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
@@ -184,3 +221,5 @@ class SignInScreen extends StatelessWidget {
     );
   }
 }
+
+
